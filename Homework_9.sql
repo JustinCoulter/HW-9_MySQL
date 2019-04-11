@@ -158,5 +158,38 @@ USE sakila;
 SELECT sales_by_store.store, CONCAT('$', sales_by_store.total_sales) AS total_sales
 FROM sales_by_store;
 
-#7h.
+#7g.
 
+CREATE VIEW store_address AS
+SELECT a.store_id, a.address_id, b.address, b.city_id, b.district
+FROM store a
+JOIN address b
+ON a.address_id = b.address_id;
+CREATE VIEW store_city AS
+SELECT city.city, store_address.store_id, store_address.address, store_address.district, store_address.city_id, city.country_id
+FROM store_address
+LEFT JOIN city
+ON store_address.city_id = city.city_id;
+SELECT a.store_id, a.city, b.country
+FROM store_city a
+JOIN country b
+ON a.country_id = b.country_id;
+
+#7h.
+SELECT category, total_sales
+FROM sales_by_film_category
+ORDER BY total_sales DESC
+LIMIT 5;
+
+#8a.
+CREATE VIEW top_five_genres AS
+SELECT category, total_sales
+FROM sales_by_film_category
+ORDER BY total_sales DESC
+LIMIT 5;
+
+#8b.
+SELECT * FROM top_five_genres;
+
+#8c
+DROP VIEW top_five_genres;

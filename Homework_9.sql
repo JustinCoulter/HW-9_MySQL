@@ -45,6 +45,7 @@ FROM sakila.actor
 GROUP BY last_name
 HAVING COUNT(last_name) > 1;
 #4c.
+SET SQL_SAFE_UPDATES=0;
 UPDATE actor
 SET first_name = 'Harpo', Actor_Name = 'Harpo Williams'
 WHERE Actor_Name = 'GROUCHO WILLIAMS';
@@ -74,7 +75,7 @@ ON staff.staff_id = payment.staff_id
 GROUP BY staff_id;
 #6c.
 USE sakila;
-SELECT film.film_id, film.title, COUNT(film_actor.actor_id)
+SELECT film.film_id, film.title, COUNT(film_actor.actor_id) AS number_of_actors
 FROM film
 INNER JOIN film_actor
 ON film.film_id = film_actor.film_id
@@ -83,24 +84,23 @@ GROUP BY film.film_id;
 SELECT film_id, title
 FROM sakila.film
 where title = 'Hunchback Impossible';
-SELECT SUM(inventory.film_id)
+SELECT COUNT(inventory.film_id)
 FROM inventory
 WHERE film_id = 439;
 #6e
 USE sakila;
-SELECT payment.customer_id, customer.first_name, customer.last_name, SUM(payment.amount)
+SELECT payment.customer_id, customer.first_name, customer.last_name, SUM(payment.amount) AS total_paid
 FROM  payment 
 INNER JOIN customer 
 ON payment.customer_id = customer.customer_id
 GROUP BY payment.customer_id
 ORDER BY last_name;
+
 #7a.
 USE sakila;
 SELECT title
 FROM film
 WHERE (title LIKE 'K%' or title LIKE 'Q%') and language_id = 1;
-
-
 
 #7b.
 SELECT first_name, last_name
@@ -175,16 +175,40 @@ FROM store_city a
 JOIN country b
 ON a.country_id = b.country_id;
 
-#7h.
+#7h. (easy way)
 SELECT category, total_sales
 FROM sales_by_film_category
 ORDER BY total_sales DESC
 LIMIT 5;
 
-#8a.
+#7h. (hard way)
+USE sakila;
+SELECT category.name, SUM(payment.amount) AS total_sales
+FROM rental
+JOIN payment ON rental.rental_id = payment.rental_id
+JOIN inventory ON rental.inventory_id = inventory.inventory_id
+JOIN film_category ON film_category.film_id = inventory.film_id
+JOIN category ON film_category.category_id = category.category_id
+GROUP BY category.name
+ORDER BY total_sales DESC
+LIMIT 5;
+
+#8a.(easy way)
 CREATE VIEW top_five_genres AS
 SELECT category, total_sales
 FROM sales_by_film_category
+ORDER BY total_sales DESC
+LIMIT 5;
+
+#8a.(hard way)
+CREATE VIEW top_five_genres_1 AS
+SELECT category.name, SUM(payment.amount) AS total_sales
+FROM rental
+JOIN payment ON rental.rental_id = payment.rental_id
+JOIN inventory ON rental.inventory_id = inventory.inventory_id
+JOIN film_category ON film_category.film_id = inventory.film_id
+JOIN category ON film_category.category_id = category.category_id
+GROUP BY category.name
 ORDER BY total_sales DESC
 LIMIT 5;
 
